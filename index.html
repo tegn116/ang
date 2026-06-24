@@ -302,8 +302,13 @@
 
         // 카카오 지하철 열기 함수
         function openKakaoSubway() {
-            // 카카오 지하철 앱 직접 실행
+            // 카카오 지하철 앱 실행
             window.location.href = 'kakaosubway://';
+            
+            // 앱이 없을 경우 앱스토어로
+            setTimeout(() => {
+                window.location.href = 'https://apps.apple.com/kr/app/id1095533900';
+            }, 2000);
         }
     </script>
 </body>
