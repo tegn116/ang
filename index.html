@@ -302,17 +302,8 @@
 
         // 카카오 지하철 열기 함수
         function openKakaoSubway() {
-            // 카카오 지하철 앱 URL Scheme
-            const subwayAppUrl = 'kakaosubway://';
-            const appStoreUrl = 'https://apps.apple.com/kr/app/id1095533900';
-            
-            // 앱 실행 시도
-            window.location.href = subwayAppUrl;
-            
-            // 앱이 설치 안 되어 있으면 앱스토어로 이동
-            setTimeout(() => {
-                window.location.href = appStoreUrl;
-            }, 1500);
+            // 카카오 지하철 앱 직접 실행
+            window.location.href = 'kakaosubway://';
         }
     </script>
 </body>
