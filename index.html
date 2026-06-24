@@ -117,6 +117,25 @@
             color: #cc7700;
         }
 
+        .kakao-map-btn {
+            background: #FFE812;
+            color: #333;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-align: center;
+            display: none;
+            font-size: 13px;
+        }
+
+        .kakao-map-btn.show {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 15px;
@@ -196,4 +215,76 @@
             '2026-07-25': { type: 'dayoff' },
             '2026-07-26': { type: 'flight', flights: [
                 { flight: '331', route: 'ICN→PEK', departure: '08:20', arrival: '09:40' },
-                { flight: '332', route: 'PEK→ICN', departure: '10:40', arrival:
+                { flight: '332', route: 'PEK→ICN', departure: '10:40', arrival: '13:40' }
+            ]},
+            '2026-07-27': { type: 'event', text: 'KE 표준업무' },
+            '2026-07-28': { type: 'event', text: 'KE 표준업무' },
+            '2026-07-29': { type: 'dayoff' },
+            '2026-07-30': { type: 'flight', flights: [
+                { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45' },
+                { flight: '3625', route: 'SHA→GMP', departure: '10:55', arrival: '14:00' }
+            ]},
+            '2026-07-31': { type: 'flight', flights: [
+                { flight: '347', route: 'ICN→XIY', departure: '09:50', arrival: '12:10' },
+                { flight: '348', route: 'XIY→ICN', departure: '13:10', arrival: '17:00' }
+            ]}
+        };
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const day = days[date.getDay()];
+            return `${dateStr.split('-')[2]}일 (${day})`;
+        }
+
+        function generateScheduleList() {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = '';
+
+            Object.entries(scheduleData).forEach(([dateStr, data]) => {
+                const item = document.createElement('div');
+                item.className = 'schedule-item';
+
+                if (data.type === 'flight') {
+                    item.className += ' flight-item';
+                    let html = `<div class="date">${formatDate(dateStr)}</div>`;
+
+                    data.flights.forEach((flight, idx) => {
+                        html += `<div class="flight-number">${flight.flight} · ${flight.route}</div>`;
+                        
+                        // 출발과 도착을 명확하게 구분
+                        html += `<div class="time-info">`;
+                        html += `<span class="time-label">출발</span><span class="time-value">${flight.departure || '-'}</span>`;
+                        html += `<span class="time-label">도착</span><span class="time-value">${flight.arrival || '-'}</span>`;
+                        html += `</div>`;
+                    });
+
+                    item.innerHTML = html;
+                } else if (data.type === 'dayoff') {
+                    item.className += ' dayoff';
+                    item.innerHTML = `
+                        <div class="date">${formatDate(dateStr)}</div>
+                        <div class="dayoff-text">휴무</div>
+                    `;
+                } else if (data.type === 'event') {
+                    item.className += ' event';
+                    item.innerHTML = `
+                        <div class="date">${formatDate(dateStr)}</div>
+                        <div class="event-text">${data.text}</div>
+                    `;
+                } else if (data.type === 'layover') {
+                    item.className += ' event';
+                    item.innerHTML = `
+                        <div class="date">${formatDate(dateStr)}</div>
+                        <div class="event-text">${data.text}</div>
+                    `;
+                }
+
+                list.appendChild(item);
+            });
+        }
+
+        generateScheduleList();
+    </script>
+</body>
+</html>
