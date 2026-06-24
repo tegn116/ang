@@ -305,16 +305,16 @@
             const appUrl = 'kakaosubway://';
             const fallbackUrl = 'https://apps.apple.com/kr/app/id1095533900';
             
-            // 현재 시간 기록
-            const clickTime = Date.now();
+            // 숨겨진 iframe으로 앱 실행 시도 (에러 메시지 안 보임)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appUrl;
+            document.body.appendChild(iframe);
             
-            // 앱 실행 시도
-            window.location.href = appUrl;
-            
-            // 2초 후에도 페이지가 보이면 (앱이 안 열렸으면) 앱스토어로
+            // 2초 후 앱이 안 열렸으면 앱스토어로
             setTimeout(() => {
-                // 사용자가 페이지를 떠나지 않았으면 앱이 없는 것
-                if (Date.now() - clickTime < 2500 && !document.hidden) {
+                document.body.removeChild(iframe);
+                if (!document.hidden) {
                     window.location.href = fallbackUrl;
                 }
             }, 2000);
