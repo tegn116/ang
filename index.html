@@ -75,6 +75,20 @@
             font-weight: bold;
             color: #003d99;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .showup-badge {
+            background: #ff5722;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
         }
 
         .flight-info {
@@ -178,7 +192,7 @@
             '2026-07-03': { type: 'dayoff' },
             '2026-07-04': { type: 'dayoff' },
             '2026-07-05': { type: 'dayoff' },
-            '2026-07-06': { type: 'flight', flights: [{ flight: '731', route: 'ICN→SGN', departure: '07:30', arrival: '11:00' }] },
+            '2026-07-06': { type: 'flight', flights: [{ flight: '731', route: 'ICN→SGN', departure: '07:30', arrival: '11:00', showup: 'T2 05:40' }] },
             '2026-07-07': { type: 'flight', flights: [{ flight: '732', route: 'SGN→ICN', departure: '12:05', arrival: '19:25' }] },
             '2026-07-08': { type: 'dayoff' },
             '2026-07-09': { type: 'event', text: '장거리 STBY' },
@@ -188,35 +202,35 @@
             '2026-07-13': { type: 'dayoff' },
             '2026-07-14': { type: 'dayoff' },
             '2026-07-15': { type: 'flight', flights: [
-                { flight: '369', route: 'ICN→CAN', departure: '08:35', arrival: '11:15' },
+                { flight: '369', route: 'ICN→CAN', departure: '08:35', arrival: '11:15', showup: 'T2 06:45' },
                 { flight: '370', route: 'CAN→ICN', departure: '12:25', arrival: '17:00' }
             ]},
             '2026-07-16': { type: 'dayoff' },
             '2026-07-17': { type: 'flight', flights: [
-                { flight: '577', route: 'ICN→ALA', departure: '18:10', arrival: '20:50' },
+                { flight: '577', route: 'ICN→ALA', departure: '18:10', arrival: '20:50', showup: 'T2 16:20' },
                 { flight: '578', route: 'ALA→ICN', departure: '22:10', arrival: '' }
             ]},
             '2026-07-18': { type: 'flight', flights: [{ flight: '578', route: 'ALA→ICN', departure: '-', arrival: '07:30' }] },
             '2026-07-19': { type: 'dayoff' },
-            '2026-07-20': { type: 'flight', flights: [{ flight: '202', route: 'ICN→LAX', departure: '12:40', arrival: '08:40(+1)' }] },
+            '2026-07-20': { type: 'flight', flights: [{ flight: '202', route: 'ICN→LAX', departure: '12:40', arrival: '08:40(+1)', showup: 'T2 10:50' }] },
             '2026-07-21': { type: 'layover', text: '✈️' },
             '2026-07-22': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '10:40', arrival: '15:20(+1)' }] },
             '2026-07-23': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '-', arrival: '15:20' }] },
             '2026-07-24': { type: 'dayoff' },
             '2026-07-25': { type: 'dayoff' },
             '2026-07-26': { type: 'flight', flights: [
-                { flight: '331', route: 'ICN→PEK', departure: '08:20', arrival: '09:40' },
+                { flight: '331', route: 'ICN→PEK', departure: '08:20', arrival: '09:40', showup: 'T2 06:30' },
                 { flight: '332', route: 'PEK→ICN', departure: '10:40', arrival: '13:40' }
             ]},
             '2026-07-27': { type: 'event', text: 'KE 표준업무' },
             '2026-07-28': { type: 'event', text: 'KE 표준업무' },
             '2026-07-29': { type: 'dayoff' },
             '2026-07-30': { type: 'flight', flights: [
-                { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45' },
+                { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45', showup: 'GS 07:10' },
                 { flight: '3625', route: 'SHA→GMP', departure: '10:55', arrival: '14:00' }
             ]},
             '2026-07-31': { type: 'flight', flights: [
-                { flight: '347', route: 'ICN→XIY', departure: '09:50', arrival: '12:10' },
+                { flight: '347', route: 'ICN→XIY', departure: '09:50', arrival: '12:10', showup: 'T2 08:00' },
                 { flight: '348', route: 'XIY→ICN', departure: '13:10', arrival: '17:00' }
             ]}
         };
@@ -241,7 +255,11 @@
                     let html = `<div class="date">${formatDate(dateStr)}</div>`;
 
                     data.flights.forEach((flight, idx) => {
-                        html += `<div class="flight-number">${flight.flight} · ${flight.route}</div>`;
+                        let flightLine = `${flight.flight} · ${flight.route}`;
+                        if (flight.showup) {
+                            flightLine += ` <span class="showup-badge">${flight.showup}</span>`;
+                        }
+                        html += `<div class="flight-number">${flightLine}</div>`;
                         
                         // 출발과 도착을 명확하게 구분
                         html += `<div class="time-info">`;
@@ -284,9 +302,17 @@
 
         // 카카오 지하철 열기 함수
         function openKakaoSubway() {
-            // 양천향교역으로 설정
-            const kakaoSubwayUrl = 'https://map.kakao.com/link/roadview/37.5125,126.8631';
-            window.open(kakaoSubwayUrl, '_blank');
+            // 카카오 지하철 앱 실행
+            const subwayAppUrl = 'kakaomap://subway?stationName=양천향교';
+            const webUrl = 'https://map.kakao.com/?map_type=TYPE_SUBWAY&q=양천향교역';
+            
+            // 모바일에서는 앱 실행 시도
+            window.location.href = subwayAppUrl;
+            
+            // 앱이 없으면 웹으로 fallback
+            setTimeout(() => {
+                window.open(webUrl, '_blank');
+            }, 500);
         }
     </script>
 </body>
