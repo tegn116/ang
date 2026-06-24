@@ -249,10 +249,9 @@
                         html += `<span class="time-label">도착</span><span class="time-value">${flight.arrival || '-'}</span>`;
                         html += `</div>`;
                         
-                        // ICN 출발 비행에만 카카오맵 버튼 추가
+                        // ICN 출발 비행에만 카카오 지하철 버튼 추가
                         if (flight.route.startsWith('ICN') && flight.departure && flight.departure !== '-') {
-                            const destination = flight.route.split('→')[1];
-                            html += `<button class="kakao-map-btn" onclick="openKakaoMap('${destination}')">🚇 카카오맵</button>`;
+                            html += `<button class="kakao-map-btn" onclick="openKakaoSubway()">🚇 카카오 지하철</button>`;
                         }
                     });
 
@@ -283,22 +282,11 @@
 
         generateScheduleList();
 
-        // 카카오맵 열기 함수
-        function openKakaoMap(destination) {
-            const kakaoMapUrls = {
-                'SGN': 'https://map.kakao.com/link/to/호치민,10.7769,106.7009',
-                'CAN': 'https://map.kakao.com/link/to/광저우,23.1291,113.2644',
-                'ALA': 'https://map.kakao.com/link/to/앵커리지,61.2181,-149.9003',
-                'LAX': 'https://map.kakao.com/link/to/로스앤젤레스,34.0522,-118.2437',
-                'PEK': 'https://map.kakao.com/link/to/베이징,39.9042,116.4074',
-                'SHA': 'https://map.kakao.com/link/to/상하이,31.2304,121.4737',
-                'XIY': 'https://map.kakao.com/link/to/시안,34.3416,108.9398'
-            };
-            
-            const url = kakaoMapUrls[destination];
-            if (url) {
-                window.open(url, '_blank');
-            }
+        // 카카오 지하철 열기 함수
+        function openKakaoSubway() {
+            // 양천향교역으로 설정
+            const kakaoSubwayUrl = 'https://map.kakao.com/link/roadview/37.5125,126.8631';
+            window.open(kakaoSubwayUrl, '_blank');
         }
     </script>
 </body>
