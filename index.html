@@ -302,12 +302,21 @@
 
         // 카카오 지하철 열기 함수
         function openKakaoSubway() {
-            // 카카오 지하철 앱 실행
-            window.location.href = 'kakaosubway://';
+            const appUrl = 'kakaosubway://';
+            const fallbackUrl = 'https://apps.apple.com/kr/app/id1095533900';
             
-            // 앱이 없을 경우 앱스토어 앱으로 바로 이동
+            // 현재 시간 기록
+            const clickTime = Date.now();
+            
+            // 앱 실행 시도
+            window.location.href = appUrl;
+            
+            // 2초 후에도 페이지가 보이면 (앱이 안 열렸으면) 앱스토어로
             setTimeout(() => {
-                window.location.href = 'itms-apps://apps.apple.com/kr/app/id1095533900';
+                // 사용자가 페이지를 떠나지 않았으면 앱이 없는 것
+                if (Date.now() - clickTime < 2500 && !document.hidden) {
+                    window.location.href = fallbackUrl;
+                }
             }, 2000);
         }
     </script>
