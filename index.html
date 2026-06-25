@@ -42,6 +42,57 @@
             margin: 0;
         }
 
+        .month-tabs {
+            background: white;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .month-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .month-tab {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 4px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .month-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
         .schedule-list {
             padding: 10px;
         }
@@ -178,62 +229,115 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>✈️ 2026년 7월 앙이 스케줄</h1>
+            <h1>✈️ 2026년 앙이 스케줄</h1>
         </div>
+
+        <div class="month-tabs" id="monthTabs"></div>
 
         <div class="schedule-list" id="scheduleList"></div>
     </div>
 
     <script>
-        const scheduleData = {
-            '2026-06-30': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '23:20', arrival: '' }] },
-            '2026-07-01': { type: 'layover', text: '✈️' },
-            '2026-07-02': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '-', arrival: '04:25' }] },
-            '2026-07-03': { type: 'dayoff' },
-            '2026-07-04': { type: 'dayoff' },
-            '2026-07-05': { type: 'dayoff' },
-            '2026-07-06': { type: 'flight', flights: [{ flight: '731', route: 'ICN→SGN', departure: '07:30', arrival: '11:00', showup: 'T2 05:40' }] },
-            '2026-07-07': { type: 'flight', flights: [{ flight: '732', route: 'SGN→ICN', departure: '12:05', arrival: '19:25' }] },
-            '2026-07-08': { type: 'dayoff' },
-            '2026-07-09': { type: 'event', text: '장거리 STBY' },
-            '2026-07-10': { type: 'event', text: '장거리 STBY' },
-            '2026-07-11': { type: 'event', text: '장거리 STBY' },
-            '2026-07-12': { type: 'event', text: '장거리 STBY' },
-            '2026-07-13': { type: 'dayoff' },
-            '2026-07-14': { type: 'dayoff' },
-            '2026-07-15': { type: 'flight', flights: [
-                { flight: '369', route: 'ICN→CAN', departure: '08:35', arrival: '11:15', showup: 'T2 06:45' },
-                { flight: '370', route: 'CAN→ICN', departure: '12:25', arrival: '17:00' }
-            ]},
-            '2026-07-16': { type: 'dayoff' },
-            '2026-07-17': { type: 'flight', flights: [
-                { flight: '577', route: 'ICN→ALA', departure: '18:10', arrival: '20:50', showup: 'T2 16:20' },
-                { flight: '578', route: 'ALA→ICN', departure: '22:10', arrival: '' }
-            ]},
-            '2026-07-18': { type: 'flight', flights: [{ flight: '578', route: 'ALA→ICN', departure: '-', arrival: '07:30' }] },
-            '2026-07-19': { type: 'dayoff' },
-            '2026-07-20': { type: 'flight', flights: [{ flight: '202', route: 'ICN→LAX', departure: '12:40', arrival: '08:40(+1)', showup: 'T2 10:50' }] },
-            '2026-07-21': { type: 'layover', text: '✈️' },
-            '2026-07-22': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '10:40', arrival: '15:20(+1)' }] },
-            '2026-07-23': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '-', arrival: '15:20' }] },
-            '2026-07-24': { type: 'dayoff' },
-            '2026-07-25': { type: 'dayoff' },
-            '2026-07-26': { type: 'flight', flights: [
-                { flight: '331', route: 'ICN→PEK', departure: '08:20', arrival: '09:40', showup: 'T2 06:30' },
-                { flight: '332', route: 'PEK→ICN', departure: '10:40', arrival: '13:40' }
-            ]},
-            '2026-07-27': { type: 'event', text: 'KE 표준업무' },
-            '2026-07-28': { type: 'event', text: 'KE 표준업무' },
-            '2026-07-29': { type: 'dayoff' },
-            '2026-07-30': { type: 'flight', flights: [
-                { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45', showup: 'GS 07:10' },
-                { flight: '3625', route: 'SHA→GMP', departure: '10:55', arrival: '14:00' }
-            ]},
-            '2026-07-31': { type: 'flight', flights: [
-                { flight: '347', route: 'ICN→XIY', departure: '09:50', arrival: '12:10', showup: 'T2 08:00' },
-                { flight: '348', route: 'XIY→ICN', departure: '13:10', arrival: '17:00' }
-            ]}
+        // 월별 스케줄 데이터
+        const monthlyData = {
+            6: {
+                '2026-05-30': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '23:20', arrival: '' }] },
+                '2026-05-31': { type: 'layover', text: '✈️' },
+                '2026-06-01': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '-', arrival: '04:25' }] },
+                '2026-06-02': { type: 'dayoff' },
+                '2026-06-03': { type: 'dayoff' },
+                '2026-06-04': { type: 'dayoff' },
+                '2026-06-05': { type: 'flight', flights: [{ flight: '567', route: 'ICN→UBN', departure: '20:20', arrival: '23:05', showup: 'T2 18:30' }] },
+                '2026-06-06': { type: 'flight', flights: [{ flight: '568', route: 'UBN→ICN', departure: '01:50', arrival: '06:10' }] },
+                '2026-06-07': { type: 'dayoff' },
+                '2026-06-08': { type: 'flight', flights: [
+                    { flight: '114', route: 'ICN→KIX', departure: '16:40', arrival: '18:30', showup: 'T2 14:50' },
+                    { flight: '113', route: 'KIX→ICN', departure: '19:45', arrival: '21:40' }
+                ]},
+                '2026-06-09': { type: 'dayoff' },
+                '2026-06-10': { type: 'flight', flights: [
+                    { flight: '371', route: 'ICN→SZX', departure: '10:05', arrival: '12:40', showup: 'T2 08:15' },
+                    { flight: '372', route: 'SZX→ICN', departure: '13:50', arrival: '18:30' }
+                ]},
+                '2026-06-11': { type: 'dayoff' },
+                '2026-06-12': { type: 'dayoff' },
+                '2026-06-13': { type: 'event', text: '연차휴가' },
+                '2026-06-14': { type: 'event', text: '연차휴가' },
+                '2026-06-15': { type: 'event', text: 'STBY확인요망' },
+                '2026-06-16': { type: 'flight', flights: [{ flight: '204', route: 'ICN→LAX', departure: '21:40', arrival: '17:10(+1)', showup: 'T2 19:50' }] },
+                '2026-06-17': { type: 'layover', text: '✈️' },
+                '2026-06-18': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '10:10', arrival: '15:20(+1)' }] },
+                '2026-06-19': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '-', arrival: '15:20' }] },
+                '2026-06-20': { type: 'dayoff' },
+                '2026-06-21': { type: 'dayoff' },
+                '2026-06-22': { type: 'event', text: 'STBY확인요망' },
+                '2026-06-23': { type: 'event', text: 'STBY확인요망' },
+                '2026-06-24': { type: 'flight', flights: [
+                    { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45', showup: 'GS 07:10' },
+                    { flight: '3625', route: 'SHA→GMP', departure: '10:55', arrival: '14:00' }
+                ]},
+                '2026-06-25': { type: 'flight', flights: [
+                    { flight: '361', route: 'ICN→PVG', departure: '09:00', arrival: '10:05', showup: 'T2 07:10' },
+                    { flight: '362', route: 'PVG→ICN', departure: '11:40', arrival: '14:30' }
+                ]},
+                '2026-06-26': { type: 'flight', flights: [{ flight: '729', route: 'ICN→HAN', departure: '09:15', arrival: '12:15', showup: 'T2 07:25' }] },
+                '2026-06-27': { type: 'flight', flights: [{ flight: '730', route: 'HAN→ICN', departure: '13:25', arrival: '19:35' }] },
+                '2026-06-28': { type: 'dayoff' },
+                '2026-06-29': { type: 'flight', flights: [{ flight: '212', route: 'ICN→SFO', departure: '21:00', arrival: '15:30(+1)', showup: 'T2 19:10' }] },
+                '2026-06-30': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '23:20', arrival: '' }] }
+            },
+            7: {
+                '2026-06-30': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '23:20', arrival: '' }] },
+                '2026-07-01': { type: 'layover', text: '✈️' },
+                '2026-07-02': { type: 'flight', flights: [{ flight: '211', route: 'SFO→ICN', departure: '-', arrival: '04:25' }] },
+                '2026-07-03': { type: 'dayoff' },
+                '2026-07-04': { type: 'dayoff' },
+                '2026-07-05': { type: 'dayoff' },
+                '2026-07-06': { type: 'flight', flights: [{ flight: '731', route: 'ICN→SGN', departure: '07:30', arrival: '11:00', showup: 'T2 05:40' }] },
+                '2026-07-07': { type: 'flight', flights: [{ flight: '732', route: 'SGN→ICN', departure: '12:05', arrival: '19:25' }] },
+                '2026-07-08': { type: 'dayoff' },
+                '2026-07-09': { type: 'event', text: '장거리 STBY' },
+                '2026-07-10': { type: 'event', text: '장거리 STBY' },
+                '2026-07-11': { type: 'event', text: '장거리 STBY' },
+                '2026-07-12': { type: 'event', text: '장거리 STBY' },
+                '2026-07-13': { type: 'dayoff' },
+                '2026-07-14': { type: 'dayoff' },
+                '2026-07-15': { type: 'flight', flights: [
+                    { flight: '369', route: 'ICN→CAN', departure: '08:35', arrival: '11:15', showup: 'T2 06:45' },
+                    { flight: '370', route: 'CAN→ICN', departure: '12:25', arrival: '17:00' }
+                ]},
+                '2026-07-16': { type: 'dayoff' },
+                '2026-07-17': { type: 'flight', flights: [
+                    { flight: '577', route: 'ICN→ALA', departure: '18:10', arrival: '20:50', showup: 'T2 16:20' },
+                    { flight: '578', route: 'ALA→ICN', departure: '22:10', arrival: '' }
+                ]},
+                '2026-07-18': { type: 'flight', flights: [{ flight: '578', route: 'ALA→ICN', departure: '-', arrival: '07:30' }] },
+                '2026-07-19': { type: 'dayoff' },
+                '2026-07-20': { type: 'flight', flights: [{ flight: '202', route: 'ICN→LAX', departure: '12:40', arrival: '08:40(+1)', showup: 'T2 10:50' }] },
+                '2026-07-21': { type: 'layover', text: '✈️' },
+                '2026-07-22': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '10:40', arrival: '15:20(+1)' }] },
+                '2026-07-23': { type: 'flight', flights: [{ flight: '201', route: 'LAX→ICN', departure: '-', arrival: '15:20' }] },
+                '2026-07-24': { type: 'dayoff' },
+                '2026-07-25': { type: 'dayoff' },
+                '2026-07-26': { type: 'flight', flights: [
+                    { flight: '331', route: 'ICN→PEK', departure: '08:20', arrival: '09:40', showup: 'T2 06:30' },
+                    { flight: '332', route: 'PEK→ICN', departure: '10:40', arrival: '13:40' }
+                ]},
+                '2026-07-27': { type: 'event', text: 'KE 표준업무' },
+                '2026-07-28': { type: 'event', text: 'KE 표준업무' },
+                '2026-07-29': { type: 'dayoff' },
+                '2026-07-30': { type: 'flight', flights: [
+                    { flight: '3615', route: 'GMP→SHA', departure: '08:30', arrival: '09:45', showup: 'GS 07:10' },
+                    { flight: '3625', route: 'SHA→GMP', departure: '10:55', arrival: '14:00' }
+                ]},
+                '2026-07-31': { type: 'flight', flights: [
+                    { flight: '347', route: 'ICN→XIY', departure: '09:50', arrival: '12:10', showup: 'T2 08:00' },
+                    { flight: '348', route: 'XIY→ICN', departure: '13:10', arrival: '17:00' }
+                ]}
+            }
         };
+
+        let currentMonth = 6; // 기본값: 현재 월
 
         function formatDate(dateStr) {
             const date = new Date(dateStr + 'T00:00:00');
@@ -242,9 +346,52 @@
             return `${dateStr.split('-')[2]}일 (${day})`;
         }
 
+        function generateMonthTabs() {
+            const tabs = document.getElementById('monthTabs');
+            tabs.innerHTML = '';
+            
+            for (let month = 1; month <= 12; month++) {
+                const tab = document.createElement('button');
+                tab.className = 'month-tab' + (month === currentMonth ? ' active' : '');
+                tab.textContent = month + '월';
+                tab.onclick = () => switchMonth(month);
+                tabs.appendChild(tab);
+            }
+            
+            // 현재 월 탭으로 스크롤
+            setTimeout(() => {
+                const activeTab = tabs.querySelector('.month-tab.active');
+                if (activeTab) {
+                    activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }
+            }, 100);
+        }
+
+        function switchMonth(month) {
+            currentMonth = month;
+            generateMonthTabs();
+            generateScheduleList();
+        }
+
         function generateScheduleList() {
             const list = document.getElementById('scheduleList');
             list.innerHTML = '';
+
+            const scheduleData = monthlyData[currentMonth];
+
+            // 데이터가 없으면 빈 상태 표시
+            if (!scheduleData || Object.keys(scheduleData).length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <div class="empty-state-text">
+                            ${currentMonth}월 스케줄이 아직 없어요<br>
+                            태근에게 ${currentMonth}월 스케줄표를 전달해주세요!
+                        </div>
+                    </div>
+                `;
+                return;
+            }
 
             Object.entries(scheduleData).forEach(([dateStr, data]) => {
                 const item = document.createElement('div');
@@ -261,13 +408,11 @@
                         }
                         html += `<div class="flight-number">${flightLine}</div>`;
                         
-                        // 출발과 도착을 명확하게 구분
                         html += `<div class="time-info">`;
                         html += `<span class="time-label">출발</span><span class="time-value">${flight.departure || '-'}</span>`;
                         html += `<span class="time-label">도착</span><span class="time-value">${flight.arrival || '-'}</span>`;
                         html += `</div>`;
                         
-                        // ICN 출발 비행에만 카카오 지하철 버튼 추가
                         if (flight.route.startsWith('ICN') && flight.departure && flight.departure !== '-') {
                             html += `<button class="kakao-map-btn" onclick="openKakaoSubway()">🚇 카카오 지하철</button>`;
                         }
@@ -298,6 +443,7 @@
             });
         }
 
+        generateMonthTabs();
         generateScheduleList();
 
         // 카카오 지하철 열기 함수
@@ -305,19 +451,19 @@
             const appUrl = 'kakaosubway://';
             const fallbackUrl = 'https://apps.apple.com/kr/app/id1095533900';
             
-            // 숨겨진 iframe으로 앱 실행 시도 (에러 메시지 안 보임)
+            // 숨겨진 iframe으로 앱 실행 시도
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             iframe.src = appUrl;
             document.body.appendChild(iframe);
             
-            // 2초 후 앱이 안 열렸으면 앱스토어로
+            // 0.5초 후 앱이 안 열렸으면 앱스토어로
             setTimeout(() => {
                 document.body.removeChild(iframe);
                 if (!document.hidden) {
                     window.location.href = fallbackUrl;
                 }
-            }, 2000);
+            }, 500);
         }
     </script>
 </body>
