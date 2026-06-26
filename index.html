@@ -337,7 +337,7 @@
             }
         };
 
-        let currentMonth = 6; // 기본값: 현재 월
+        let currentMonth = new Date().getMonth() + 1; // 현재 월 자동 감지
 
         function formatDate(dateStr) {
             const date = new Date(dateStr + 'T00:00:00');
