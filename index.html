@@ -93,6 +93,215 @@
             line-height: 1.6;
         }
 
+        .schedule-item {
+            position: relative;
+        }
+
+        .edit-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .edit-btn:hover, .edit-btn:active {
+            opacity: 1;
+            background: #f0f0f0;
+        }
+
+        .modified-badge {
+            position: absolute;
+            top: 12px;
+            right: 45px;
+            background: #4caf50;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+            margin-top: 12px;
+            display: block;
+        }
+
+        .modal-input, .modal-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .modal-input:focus, .modal-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .type-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .type-btn {
+            flex: 1;
+            padding: 10px;
+            background: #f0f0f0;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .type-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .modal-btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .modal-btn-reset {
+            background: #ff5722;
+            color: white;
+        }
+
+        .flight-fields {
+            display: none;
+        }
+
+        .flight-fields.show {
+            display: block;
+        }
+
+        .event-fields {
+            display: none;
+        }
+
+        .event-fields.show {
+            display: block;
+        }
+
+        .flight-entry {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .flight-entry-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .remove-flight-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .add-flight-btn {
+            width: 100%;
+            padding: 10px;
+            background: #f0f7ff;
+            border: 1px dashed #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
         .schedule-list {
             padding: 10px;
         }
@@ -237,6 +446,38 @@
         <div class="schedule-list" id="scheduleList"></div>
     </div>
 
+    <!-- 편집 모달 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-title" id="modalTitle">일정 편집</div>
+            
+            <label class="modal-label">타입 선택</label>
+            <div class="type-buttons">
+                <button class="type-btn" data-type="flight" onclick="selectType('flight')">비행</button>
+                <button class="type-btn" data-type="dayoff" onclick="selectType('dayoff')">휴무</button>
+                <button class="type-btn" data-type="event" onclick="selectType('event')">이벤트</button>
+            </div>
+
+            <!-- 비행 필드 -->
+            <div class="flight-fields" id="flightFields">
+                <div id="flightEntries"></div>
+                <button class="add-flight-btn" onclick="addFlightEntry()">+ 비행 추가</button>
+            </div>
+
+            <!-- 이벤트 필드 -->
+            <div class="event-fields" id="eventFields">
+                <label class="modal-label">이벤트 텍스트</label>
+                <input type="text" class="modal-input" id="eventText" placeholder="예: 장거리 STBY, 연차휴가">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-reset" onclick="resetSchedule()">원래대로</button>
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">취소</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveSchedule()">저장</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 월별 스케줄 데이터
         const monthlyData = {
@@ -338,6 +579,195 @@
         };
 
         let currentMonth = new Date().getMonth() + 1; // 현재 월 자동 감지
+        let currentEditingDate = null;
+        let currentEditingType = 'flight';
+
+        // localStorage에서 수정된 데이터 불러오기
+        function getCustomData() {
+            try {
+                const data = localStorage.getItem('customSchedule');
+                return data ? JSON.parse(data) : {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveCustomData(data) {
+            localStorage.setItem('customSchedule', JSON.stringify(data));
+        }
+
+        // 실제 스케줄 데이터 가져오기 (수정된 것 우선)
+        function getScheduleForDate(dateStr) {
+            const custom = getCustomData();
+            if (custom[dateStr]) {
+                return { data: custom[dateStr], isModified: true };
+            }
+            const scheduleData = monthlyData[currentMonth];
+            if (scheduleData && scheduleData[dateStr]) {
+                return { data: scheduleData[dateStr], isModified: false };
+            }
+            return null;
+        }
+
+        // 편집 모달 열기
+        function openEditModal(dateStr) {
+            currentEditingDate = dateStr;
+            const modal = document.getElementById('editModal');
+            const existing = getScheduleForDate(dateStr);
+            
+            document.getElementById('modalTitle').textContent = `${formatDate(dateStr)} 편집`;
+            
+            // 기존 데이터로 초기화
+            if (existing) {
+                const data = existing.data;
+                if (data.type === 'flight') {
+                    selectType('flight');
+                    renderFlightEntries(data.flights);
+                } else if (data.type === 'dayoff') {
+                    selectType('dayoff');
+                } else if (data.type === 'event' || data.type === 'layover') {
+                    selectType('event');
+                    document.getElementById('eventText').value = data.text || '';
+                }
+            } else {
+                selectType('flight');
+                renderFlightEntries([{}]);
+            }
+            
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('show');
+            currentEditingDate = null;
+        }
+
+        function selectType(type) {
+            currentEditingType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            
+            document.getElementById('flightFields').classList.toggle('show', type === 'flight');
+            document.getElementById('eventFields').classList.toggle('show', type === 'event');
+            
+            // 비행 선택 시 최소 1개 엔트리 필요
+            if (type === 'flight') {
+                const entries = document.getElementById('flightEntries');
+                if (entries.children.length === 0) {
+                    renderFlightEntries([{}]);
+                }
+            }
+        }
+
+        function renderFlightEntries(flights) {
+            const container = document.getElementById('flightEntries');
+            container.innerHTML = '';
+            flights.forEach((flight, idx) => {
+                container.appendChild(createFlightEntry(flight, idx));
+            });
+        }
+
+        function createFlightEntry(flight, idx) {
+            const div = document.createElement('div');
+            div.className = 'flight-entry';
+            div.innerHTML = `
+                <div class="flight-entry-title">비행 ${idx + 1}</div>
+                <button class="remove-flight-btn" onclick="removeFlightEntry(this)">×</button>
+                <label class="modal-label">항공편</label>
+                <input type="text" class="modal-input flight-num" value="${flight.flight || ''}" placeholder="예: 731">
+                <label class="modal-label">노선</label>
+                <input type="text" class="modal-input flight-route" value="${flight.route || ''}" placeholder="예: ICN→SGN">
+                <label class="modal-label">출발</label>
+                <input type="text" class="modal-input flight-dep" value="${flight.departure || ''}" placeholder="예: 07:30">
+                <label class="modal-label">도착</label>
+                <input type="text" class="modal-input flight-arr" value="${flight.arrival || ''}" placeholder="예: 11:00">
+                <label class="modal-label">쇼업 (선택사항)</label>
+                <input type="text" class="modal-input flight-showup" value="${flight.showup || ''}" placeholder="예: T2 05:40">
+            `;
+            return div;
+        }
+
+        function addFlightEntry() {
+            const container = document.getElementById('flightEntries');
+            const idx = container.children.length;
+            container.appendChild(createFlightEntry({}, idx));
+        }
+
+        function removeFlightEntry(btn) {
+            const entries = document.getElementById('flightEntries');
+            if (entries.children.length > 1) {
+                btn.closest('.flight-entry').remove();
+                // 인덱스 재설정
+                entries.querySelectorAll('.flight-entry-title').forEach((title, idx) => {
+                    title.textContent = `비행 ${idx + 1}`;
+                });
+            } else {
+                alert('최소 1개의 비행이 필요합니다.');
+            }
+        }
+
+        function saveSchedule() {
+            if (!currentEditingDate) return;
+
+            const custom = getCustomData();
+            let newData;
+
+            if (currentEditingType === 'flight') {
+                const entries = document.querySelectorAll('#flightEntries .flight-entry');
+                const flights = [];
+                entries.forEach(entry => {
+                    const flightNum = entry.querySelector('.flight-num').value.trim();
+                    const route = entry.querySelector('.flight-route').value.trim();
+                    const departure = entry.querySelector('.flight-dep').value.trim();
+                    const arrival = entry.querySelector('.flight-arr').value.trim();
+                    const showup = entry.querySelector('.flight-showup').value.trim();
+                    
+                    if (flightNum || route) {
+                        const flight = { flight: flightNum, route: route, departure: departure, arrival: arrival };
+                        if (showup) flight.showup = showup;
+                        flights.push(flight);
+                    }
+                });
+                
+                if (flights.length === 0) {
+                    alert('최소 1개의 비행 정보를 입력해주세요.');
+                    return;
+                }
+                
+                newData = { type: 'flight', flights: flights };
+            } else if (currentEditingType === 'dayoff') {
+                newData = { type: 'dayoff' };
+            } else if (currentEditingType === 'event') {
+                const text = document.getElementById('eventText').value.trim();
+                if (!text) {
+                    alert('이벤트 텍스트를 입력해주세요.');
+                    return;
+                }
+                newData = { type: 'event', text: text };
+            }
+
+            custom[currentEditingDate] = newData;
+            saveCustomData(custom);
+            closeModal();
+            generateScheduleList();
+        }
+
+        function resetSchedule() {
+            if (!currentEditingDate) return;
+            if (!confirm('이 날짜의 수정 사항을 초기화할까요?')) return;
+            
+            const custom = getCustomData();
+            delete custom[currentEditingDate];
+            saveCustomData(custom);
+            closeModal();
+            generateScheduleList();
+        }
+
+        // 배경 클릭 시 모달 닫기
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') closeModal();
+        });
 
         function formatDate(dateStr) {
             const date = new Date(dateStr + 'T00:00:00');
@@ -378,6 +808,7 @@
             list.innerHTML = '';
 
             const scheduleData = monthlyData[currentMonth];
+            const custom = getCustomData();
 
             // 데이터가 없으면 빈 상태 표시
             if (!scheduleData || Object.keys(scheduleData).length === 0) {
@@ -393,13 +824,20 @@
                 return;
             }
 
-            Object.entries(scheduleData).forEach(([dateStr, data]) => {
+            Object.entries(scheduleData).forEach(([dateStr, originalData]) => {
                 const item = document.createElement('div');
                 item.className = 'schedule-item';
+                
+                // 수정된 데이터가 있으면 우선 사용
+                const data = custom[dateStr] || originalData;
+                const isModified = !!custom[dateStr];
+
+                let editBtn = `<button class="edit-btn" onclick="openEditModal('${dateStr}')">✏️</button>`;
+                let modifiedBadge = isModified ? `<span class="modified-badge">수정됨</span>` : '';
 
                 if (data.type === 'flight') {
                     item.className += ' flight-item';
-                    let html = `<div class="date">${formatDate(dateStr)}</div>`;
+                    let html = `<div class="date">${formatDate(dateStr)}</div>${modifiedBadge}${editBtn}`;
 
                     data.flights.forEach((flight, idx) => {
                         let flightLine = `${flight.flight} · ${flight.route}`;
@@ -413,7 +851,7 @@
                         html += `<span class="time-label">도착</span><span class="time-value">${flight.arrival || '-'}</span>`;
                         html += `</div>`;
                         
-                        if (flight.route.startsWith('ICN') && flight.departure && flight.departure !== '-') {
+                        if (flight.route && flight.route.startsWith('ICN') && flight.departure && flight.departure !== '-') {
                             html += `<button class="kakao-map-btn" onclick="openKakaoSubway()">🚇 카카오 지하철</button>`;
                         }
                     });
@@ -423,18 +861,21 @@
                     item.className += ' dayoff';
                     item.innerHTML = `
                         <div class="date">${formatDate(dateStr)}</div>
+                        ${modifiedBadge}${editBtn}
                         <div class="dayoff-text">휴무</div>
                     `;
                 } else if (data.type === 'event') {
                     item.className += ' event';
                     item.innerHTML = `
                         <div class="date">${formatDate(dateStr)}</div>
+                        ${modifiedBadge}${editBtn}
                         <div class="event-text">${data.text}</div>
                     `;
                 } else if (data.type === 'layover') {
                     item.className += ' event';
                     item.innerHTML = `
                         <div class="date">${formatDate(dateStr)}</div>
+                        ${modifiedBadge}${editBtn}
                         <div class="event-text">${data.text}</div>
                     `;
                 }
