@@ -97,6 +97,24 @@
             position: relative;
         }
 
+        .schedule-item.today {
+            border: 2px solid #ff5722;
+            box-shadow: 0 4px 12px rgba(255, 87, 34, 0.2);
+        }
+
+        .schedule-item.today::before {
+            content: '오늘';
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: #ff5722;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 10px;
+        }
+
         .edit-btn {
             position: absolute;
             top: 12px;
@@ -839,6 +857,13 @@
             currentMonth = month;
             generateMonthTabs();
             generateScheduleList();
+            // 현재 월로 전환 시에만 오늘로 스크롤
+            if (month === new Date().getMonth() + 1) {
+                setTimeout(() => scrollToToday(), 100);
+            } else {
+                // 다른 월은 맨 위로
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         function generateScheduleList() {
@@ -862,9 +887,19 @@
                 return;
             }
 
+            // 오늘 날짜 계산
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
             Object.entries(scheduleData).forEach(([dateStr, originalData]) => {
                 const item = document.createElement('div');
                 item.className = 'schedule-item';
+                
+                // 오늘 날짜 표시
+                if (dateStr === todayStr) {
+                    item.id = 'today-card';
+                    item.classList.add('today');
+                }
                 
                 // 수정된 데이터가 있으면 우선 사용
                 const data = custom[dateStr] || originalData;
@@ -924,6 +959,18 @@
 
         generateMonthTabs();
         generateScheduleList();
+        
+        // 페이지 로드 후 오늘 날짜로 스크롤
+        setTimeout(() => {
+            scrollToToday();
+        }, 100);
+        
+        function scrollToToday() {
+            const todayCard = document.getElementById('today-card');
+            if (todayCard) {
+                todayCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
 
         // 카카오 지하철 열기 함수
         function openKakaoSubway() {
