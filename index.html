@@ -369,6 +369,12 @@
             display: inline-block;
         }
 
+        .route-flags {
+            font-size: 15px;
+            margin-left: 4px;
+            letter-spacing: 1px;
+        }
+
         .flight-info {
             font-size: 13px;
             color: #333;
@@ -637,6 +643,64 @@
         let currentMonth = new Date().getMonth() + 1; // 현재 월 자동 감지
         let currentEditingDate = null;
         let currentEditingType = 'flight';
+
+        // 공항 코드별 국기 매핑
+        const airportFlags = {
+            // 한국
+            'ICN': '🇰🇷', 'GMP': '🇰🇷', 'CJU': '🇰🇷',
+            // 미국
+            'SFO': '🇺🇸', 'LAX': '🇺🇸', 'JFK': '🇺🇸', 'ALA': '🇺🇸',
+            // 일본
+            'KIX': '🇯🇵', 'NRT': '🇯🇵', 'HND': '🇯🇵', 'FUK': '🇯🇵',
+            // 중국
+            'PEK': '🇨🇳', 'PVG': '🇨🇳', 'SHA': '🇨🇳', 'CAN': '🇨🇳',
+            'SZX': '🇨🇳', 'XIY': '🇨🇳', 'CSX': '🇨🇳',
+            // 베트남
+            'SGN': '🇻🇳', 'HAN': '🇻🇳',
+            // 몽골
+            'UBN': '🇲🇳',
+            // 헝가리
+            'BUD': '🇭🇺',
+            // 대만
+            'TPE': '🇹🇼', 'TSA': '🇹🇼',
+            // 태국
+            'BKK': '🇹🇭',
+            // 싱가포르
+            'SIN': '🇸🇬',
+            // 홍콩
+            'HKG': '🇭🇰',
+            // 영국
+            'LHR': '🇬🇧',
+            // 프랑스
+            'CDG': '🇫🇷',
+            // 독일
+            'FRA': '🇩🇪', 'MUC': '🇩🇪',
+            // 네덜란드
+            'AMS': '🇳🇱',
+            // 스페인
+            'MAD': '🇪🇸', 'BCN': '🇪🇸',
+            // 이탈리아
+            'FCO': '🇮🇹', 'MXP': '🇮🇹',
+            // 러시아
+            'SVO': '🇷🇺', 'VVO': '🇷🇺',
+            // 호주
+            'SYD': '🇦🇺', 'BNE': '🇦🇺',
+            // 캐나다
+            'YVR': '🇨🇦', 'YYZ': '🇨🇦',
+            // UAE
+            'DXB': '🇦🇪', 'AUH': '🇦🇪'
+        };
+
+        function getFlagsForRoute(route) {
+            if (!route) return '';
+            const parts = route.split('→');
+            if (parts.length !== 2) return '';
+            const from = parts[0].trim();
+            const to = parts[1].trim();
+            const fromFlag = airportFlags[from] || '';
+            const toFlag = airportFlags[to] || '';
+            return `${fromFlag}→${toFlag}`;
+        }
 
         // localStorage에서 수정된 데이터 불러오기
         function getCustomData() {
@@ -913,7 +977,11 @@
                     let html = `<div class="date">${formatDate(dateStr)}</div>${modifiedBadge}${editBtn}`;
 
                     data.flights.forEach((flight, idx) => {
+                        const flags = getFlagsForRoute(flight.route);
                         let flightLine = `${flight.flight} · ${flight.route}`;
+                        if (flags) {
+                            flightLine += ` <span class="route-flags">${flags}</span>`;
+                        }
                         if (flight.showup) {
                             flightLine += ` <span class="showup-badge">${flight.showup}</span>`;
                         }
