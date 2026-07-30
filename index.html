@@ -640,6 +640,48 @@
             }
         };
 
+        // GAS API URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxM1_pfdw_J4nwuV2EwEGr1PthhFmcUBKrpd8D_hbm8YUgdzh8FQONDGSVMEls_XDtR/exec';
+        
+        // 서버에서 가져온 데이터 (localStorage 대체)
+        let serverData = {};
+        let isLoading = false;
+
+        // 서버에서 데이터 가져오기
+        async function loadServerData() {
+            if (isLoading) return;
+            isLoading = true;
+            try {
+                const response = await fetch(GAS_URL);
+                const data = await response.json();
+                if (!data.error) {
+                    serverData = data;
+                }
+            } catch (err) {
+                console.error('데이터 로드 실패:', err);
+            }
+            isLoading = false;
+        }
+
+        // 서버에 데이터 저장
+        async function saveToServer(dateStr, data) {
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ date: dateStr, data: data })
+                });
+                // 저장 후 데이터 다시 로드
+                setTimeout(async () => {
+                    await loadServerData();
+                    generateScheduleList();
+                }, 1000);
+            } catch (err) {
+                console.error('저장 실패:', err);
+            }
+        }
+
         let currentMonth = new Date().getMonth() + 1; // 현재 월 자동 감지
         let currentEditingDate = null;
         let currentEditingType = 'flight';
@@ -830,7 +872,6 @@
         function saveSchedule() {
             if (!currentEditingDate) return;
 
-            const custom = getCustomData();
             let newData;
 
             if (currentEditingType === 'flight') {
@@ -867,8 +908,17 @@
                 newData = { type: 'event', text: text };
             }
 
+            // 로컬 저장 (즉시 반영)
+            const custom = getCustomData();
             custom[currentEditingDate] = newData;
             saveCustomData(custom);
+            
+            // 서버 저장 (백그라운드)
+            saveToServer(currentEditingDate, newData);
+            
+            // 즉시 반영 (서버 응답 기다리지 않음)
+            serverData[currentEditingDate] = newData;
+            
             closeModal();
             generateScheduleList();
         }
@@ -934,11 +984,20 @@
             const list = document.getElementById('scheduleList');
             list.innerHTML = '';
 
-            const scheduleData = monthlyData[currentMonth];
+            const scheduleData = monthlyData[currentMonth] || {};
             const custom = getCustomData();
 
+            // 서버 데이터를 우선으로 병합
+            const mergedData = { ...scheduleData };
+            Object.keys(serverData).forEach(dateStr => {
+                const month = parseInt(dateStr.split('-')[1]);
+                if (month === currentMonth) {
+                    mergedData[dateStr] = serverData[dateStr];
+                }
+            });
+
             // 데이터가 없으면 빈 상태 표시
-            if (!scheduleData || Object.keys(scheduleData).length === 0) {
+            if (Object.keys(mergedData).length === 0) {
                 list.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📅</div>
@@ -951,11 +1010,14 @@
                 return;
             }
 
+            // 날짜 정렬
+            const sortedData = Object.entries(mergedData).sort((a, b) => a[0].localeCompare(b[0]));
+
             // 오늘 날짜 계산
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-            Object.entries(scheduleData).forEach(([dateStr, originalData]) => {
+            sortedData.forEach(([dateStr, originalData]) => {
                 const item = document.createElement('div');
                 item.className = 'schedule-item';
                 
@@ -1025,13 +1087,21 @@
             });
         }
 
+        // 초기 실행
         generateMonthTabs();
         generateScheduleList();
         
-        // 페이지 로드 후 오늘 날짜로 스크롤
-        setTimeout(() => {
-            scrollToToday();
-        }, 100);
+        // 서버 데이터 로드 (비동기)
+        loadServerData().then(() => {
+            generateScheduleList();
+            setTimeout(() => scrollToToday(), 100);
+        });
+        
+        // 주기적으로 서버 데이터 갱신 (30초마다)
+        setInterval(async () => {
+            await loadServerData();
+            generateScheduleList();
+        }, 30000);
         
         function scrollToToday() {
             const todayCard = document.getElementById('today-card');
