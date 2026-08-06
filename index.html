@@ -320,6 +320,44 @@
             margin-bottom: 10px;
         }
 
+        .route-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .route-input-group .modal-input {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .route-arrow {
+            font-size: 18px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .time-input-group .modal-input {
+            text-align: center;
+            font-size: 15px;
+            max-width: 70px;
+            padding: 10px 8px;
+        }
+
+        .time-colon {
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+        }
+
         .schedule-list {
             padding: 10px;
         }
@@ -833,20 +871,112 @@
         function createFlightEntry(flight, idx) {
             const div = document.createElement('div');
             div.className = 'flight-entry';
+            
+            // 노선 파싱 (예: "ICN→SGN" → from: "ICN", to: "SGN")
+            let routeFrom = '', routeTo = '';
+            if (flight.route) {
+                const parts = flight.route.split('→');
+                routeFrom = parts[0] || '';
+                routeTo = parts[1] || '';
+            }
+            
+            // 시간 파싱 (예: "07:30" → hour: "07", min: "30")
+            const parseTime = (timeStr) => {
+                if (!timeStr || timeStr === '-') return { hour: '', min: '', suffix: '' };
+                // (+1) 같은 것 처리
+                const suffixMatch = timeStr.match(/\(([^)]+)\)/);
+                const suffix = suffixMatch ? suffixMatch[1] : '';
+                const cleanTime = timeStr.replace(/\([^)]+\)/, '').trim();
+                const [h, m] = cleanTime.split(':');
+                return { hour: h || '', min: m || '', suffix: suffix };
+            };
+            
+            const dep = parseTime(flight.departure);
+            const arr = parseTime(flight.arrival);
+            
+            // 쇼업 파싱 (예: "T2 05:40" → prefix: "T2", hour: "05", min: "40")
+            let showupPrefix = '', showupHour = '', showupMin = '';
+            if (flight.showup) {
+                const match = flight.showup.match(/^(\S+)\s+(\d{1,2}):(\d{2})$/);
+                if (match) {
+                    showupPrefix = match[1];
+                    showupHour = match[2];
+                    showupMin = match[3];
+                }
+            }
+            
             div.innerHTML = `
                 <div class="flight-entry-title">비행 ${idx + 1}</div>
                 <button class="remove-flight-btn" onclick="removeFlightEntry(this)">×</button>
+                
                 <label class="modal-label">항공편</label>
-                <input type="text" class="modal-input flight-num" value="${flight.flight || ''}" placeholder="예: 731">
-                <label class="modal-label">노선</label>
-                <input type="text" class="modal-input flight-route" value="${flight.route || ''}" placeholder="예: ICN→SGN">
-                <label class="modal-label">출발</label>
-                <input type="text" class="modal-input flight-dep" value="${flight.departure || ''}" placeholder="예: 07:30">
-                <label class="modal-label">도착</label>
-                <input type="text" class="modal-input flight-arr" value="${flight.arrival || ''}" placeholder="예: 11:00">
+                <input type="tel" inputmode="numeric" class="modal-input flight-num" value="${flight.flight || ''}" placeholder="예: 731">
+                
+                <label class="modal-label">노선 (출발 → 도착)</label>
+                <div class="route-input-group">
+                    <input type="text" class="modal-input flight-route-from" value="${routeFrom}" placeholder="ICN" maxlength="3" style="text-transform: uppercase;">
+                    <span class="route-arrow">→</span>
+                    <input type="text" class="modal-input flight-route-to" value="${routeTo}" placeholder="SGN" maxlength="3" style="text-transform: uppercase;">
+                </div>
+                
+                <label class="modal-label">출발 시간</label>
+                <div class="time-input-group">
+                    <input type="tel" inputmode="numeric" class="modal-input flight-dep-hour" value="${dep.hour}" placeholder="07" maxlength="2">
+                    <span class="time-colon">:</span>
+                    <input type="tel" inputmode="numeric" class="modal-input flight-dep-min" value="${dep.min}" placeholder="30" maxlength="2">
+                    <input type="text" class="modal-input flight-dep-suffix" value="${dep.suffix}" placeholder="+1" maxlength="3" style="max-width: 60px;">
+                </div>
+                
+                <label class="modal-label">도착 시간</label>
+                <div class="time-input-group">
+                    <input type="tel" inputmode="numeric" class="modal-input flight-arr-hour" value="${arr.hour}" placeholder="11" maxlength="2">
+                    <span class="time-colon">:</span>
+                    <input type="tel" inputmode="numeric" class="modal-input flight-arr-min" value="${arr.min}" placeholder="00" maxlength="2">
+                    <input type="text" class="modal-input flight-arr-suffix" value="${arr.suffix}" placeholder="+1" maxlength="3" style="max-width: 60px;">
+                </div>
+                
                 <label class="modal-label">쇼업 (선택사항)</label>
-                <input type="text" class="modal-input flight-showup" value="${flight.showup || ''}" placeholder="예: T2 05:40">
+                <div class="time-input-group">
+                    <select class="modal-input modal-select flight-showup-prefix" style="max-width: 80px;">
+                        <option value="" ${!showupPrefix ? 'selected' : ''}>없음</option>
+                        <option value="T2" ${showupPrefix === 'T2' ? 'selected' : ''}>T2</option>
+                        <option value="T1" ${showupPrefix === 'T1' ? 'selected' : ''}>T1</option>
+                        <option value="GS" ${showupPrefix === 'GS' ? 'selected' : ''}>GS</option>
+                        <option value="G" ${showupPrefix === 'G' ? 'selected' : ''}>G</option>
+                        <option value="S" ${showupPrefix === 'S' ? 'selected' : ''}>S</option>
+                    </select>
+                    <input type="tel" inputmode="numeric" class="modal-input flight-showup-hour" value="${showupHour}" placeholder="05" maxlength="2">
+                    <span class="time-colon">:</span>
+                    <input type="tel" inputmode="numeric" class="modal-input flight-showup-min" value="${showupMin}" placeholder="40" maxlength="2">
+                </div>
             `;
+            
+            // 대문자 자동 변환
+            div.querySelector('.flight-route-from').addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+            div.querySelector('.flight-route-to').addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+            
+            // 시간 자동 이동 (2자리 입력하면 다음 필드로)
+            div.querySelectorAll('input[maxlength="2"]').forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value.length === 2) {
+                        const inputs = Array.from(div.querySelectorAll('input, select'));
+                        const idx = inputs.indexOf(this);
+                        if (idx < inputs.length - 1) {
+                            const next = inputs[idx + 1];
+                            if (next && next.tagName === 'INPUT' && next.type !== 'text') {
+                                next.focus();
+                            } else if (next) {
+                                next.focus();
+                            }
+                        }
+                    }
+                });
+            });
+            
             return div;
         }
 
@@ -879,13 +1009,46 @@
                 const flights = [];
                 entries.forEach(entry => {
                     const flightNum = entry.querySelector('.flight-num').value.trim();
-                    const route = entry.querySelector('.flight-route').value.trim();
-                    const departure = entry.querySelector('.flight-dep').value.trim();
-                    const arrival = entry.querySelector('.flight-arr').value.trim();
-                    const showup = entry.querySelector('.flight-showup').value.trim();
+                    const routeFrom = entry.querySelector('.flight-route-from').value.trim().toUpperCase();
+                    const routeTo = entry.querySelector('.flight-route-to').value.trim().toUpperCase();
+                    
+                    const depHour = entry.querySelector('.flight-dep-hour').value.trim();
+                    const depMin = entry.querySelector('.flight-dep-min').value.trim();
+                    const depSuffix = entry.querySelector('.flight-dep-suffix').value.trim();
+                    
+                    const arrHour = entry.querySelector('.flight-arr-hour').value.trim();
+                    const arrMin = entry.querySelector('.flight-arr-min').value.trim();
+                    const arrSuffix = entry.querySelector('.flight-arr-suffix').value.trim();
+                    
+                    const showupPrefix = entry.querySelector('.flight-showup-prefix').value;
+                    const showupHour = entry.querySelector('.flight-showup-hour').value.trim();
+                    const showupMin = entry.querySelector('.flight-showup-min').value.trim();
+                    
+                    // 노선 조합
+                    let route = '';
+                    if (routeFrom && routeTo) {
+                        route = `${routeFrom}→${routeTo}`;
+                    }
+                    
+                    // 시간 조합
+                    const formatTime = (h, m, suffix) => {
+                        if (!h && !m) return '';
+                        if (h === '-' || m === '-') return '-';
+                        const time = `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
+                        return suffix ? `${time}(${suffix})` : time;
+                    };
+                    
+                    const departure = formatTime(depHour, depMin, depSuffix);
+                    const arrival = formatTime(arrHour, arrMin, arrSuffix);
+                    
+                    // 쇼업 조합
+                    let showup = '';
+                    if (showupPrefix && showupHour && showupMin) {
+                        showup = `${showupPrefix} ${showupHour.padStart(2, '0')}:${showupMin.padStart(2, '0')}`;
+                    }
                     
                     if (flightNum || route) {
-                        const flight = { flight: flightNum, route: route, departure: departure, arrival: arrival };
+                        const flight = { flight: flightNum, route: route, departure: departure || '-', arrival: arrival || '-' };
                         if (showup) flight.showup = showup;
                         flights.push(flight);
                     }
