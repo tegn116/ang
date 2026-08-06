@@ -690,7 +690,10 @@
             if (isLoading) return;
             isLoading = true;
             try {
-                const response = await fetch(GAS_URL);
+                // 캐시 방지를 위해 timestamp 추가
+                const response = await fetch(GAS_URL + '?t=' + Date.now(), {
+                    cache: 'no-store'
+                });
                 const data = await response.json();
                 if (!data.error) {
                     serverData = data;
@@ -1148,9 +1151,8 @@
             list.innerHTML = '';
 
             const scheduleData = monthlyData[currentMonth] || {};
-            const custom = getCustomData();
 
-            // 서버 데이터를 우선으로 병합
+            // 기본 데이터 복사 후, 서버 데이터로 덮어쓰기 (서버 우선!)
             const mergedData = { ...scheduleData };
             Object.keys(serverData).forEach(dateStr => {
                 const month = parseInt(dateStr.split('-')[1]);
@@ -1180,7 +1182,7 @@
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-            sortedData.forEach(([dateStr, originalData]) => {
+            sortedData.forEach(([dateStr, mergedItem]) => {
                 const item = document.createElement('div');
                 item.className = 'schedule-item';
                 
@@ -1190,9 +1192,9 @@
                     item.classList.add('today');
                 }
                 
-                // 수정된 데이터가 있으면 우선 사용
-                const data = custom[dateStr] || originalData;
-                const isModified = !!custom[dateStr];
+                // 서버 데이터가 있으면 "수정됨" 뱃지
+                const data = mergedItem;
+                const isModified = !!serverData[dateStr];
 
                 let editBtn = `<button class="edit-btn" onclick="openEditModal('${dateStr}')">✏️</button>`;
                 let modifiedBadge = isModified ? `<span class="modified-badge">수정됨</span>` : '';
