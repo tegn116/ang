@@ -725,7 +725,7 @@
                             route: flight.route || '',
                             departure: normalizeTime(flight.departure),
                             arrival: normalizeTime(flight.arrival),
-                            ...(flight.showup ? { showup: flight.showup } : {})
+                            ...(flight.showup ? { showup: normalizeShowup(flight.showup) } : {})
                         }))
                     };
                 } else {
@@ -778,6 +778,28 @@
                 return `${h}:${m}`;
             } catch (e) {
                 return timeStr;
+            }
+        }
+
+        // 쇼업 정규화: "Sat Dec 30 1899 12:05:00" → "T2 12:05" (원본에 접두사 있으면 유지)
+        function normalizeShowup(showupStr) {
+            if (!showupStr) return '';
+            
+            // 이미 정상 형식 (예: "T2 05:40")
+            if (/^[A-Z]+ \d{1,2}:\d{2}$/.test(showupStr)) {
+                return showupStr;
+            }
+            
+            // Date 문자열이면 시간만 추출 (접두사 없음)
+            try {
+                const date = new Date(showupStr);
+                if (isNaN(date.getTime())) return showupStr;
+                
+                const h = String(date.getHours()).padStart(2, '0');
+                const m = String(date.getMinutes()).padStart(2, '0');
+                return `${h}:${m}`;
+            } catch (e) {
+                return showupStr;
             }
         }
 
