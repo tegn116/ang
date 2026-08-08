@@ -1101,8 +1101,11 @@
             }
         }
 
-        function saveSchedule() {
+        async function saveSchedule() {
             if (!currentEditingDate) return;
+            
+            const saveBtn = document.querySelector('.modal-btn-primary');
+            if (saveBtn.disabled) return;
 
             let newData;
 
@@ -1126,13 +1129,11 @@
                     const showupHour = entry.querySelector('.flight-showup-hour').value.trim();
                     const showupMin = entry.querySelector('.flight-showup-min').value.trim();
                     
-                    // 노선 조합
                     let route = '';
                     if (routeFrom && routeTo) {
                         route = `${routeFrom}→${routeTo}`;
                     }
                     
-                    // 시간 조합
                     const formatTime = (h, m, suffix) => {
                         if (!h && !m) return '';
                         if (h === '-' || m === '-') return '-';
@@ -1143,7 +1144,6 @@
                     const departure = formatTime(depHour, depMin, depSuffix);
                     const arrival = formatTime(arrHour, arrMin, arrSuffix);
                     
-                    // 쇼업 조합
                     let showup = '';
                     if (showupPrefix && showupHour && showupMin) {
                         showup = `${showupPrefix} ${showupHour.padStart(2, '0')}:${showupMin.padStart(2, '0')}`;
@@ -1173,19 +1173,27 @@
                 newData = { type: 'event', text: text };
             }
 
-            // 로컬 저장 (즉시 반영)
-            const custom = getCustomData();
-            custom[currentEditingDate] = newData;
-            saveCustomData(custom);
-            
-            // 서버 저장 (백그라운드)
-            saveToServer(currentEditingDate, newData);
-            
-            // 즉시 반영 (서버 응답 기다리지 않음)
+            // 1. 즉시 화면에 반영
             serverData[currentEditingDate] = newData;
             
+            // 2. 백그라운드에서 서버 저장
+            saveToServerBackground(currentEditingDate, newData);
+            
+            // 3. 즉시 모달 닫고 화면 갱신
             closeModal();
             generateScheduleList();
+        }
+
+        // 백그라운드 서버 저장 (기다리지 않음)
+        function saveToServerBackground(dateStr, data) {
+            fetch(GAS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ date: dateStr, data: data })
+            }).catch(err => {
+                console.error('저장 실패:', err);
+            });
         }
 
         function resetSchedule() {
