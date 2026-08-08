@@ -1260,6 +1260,10 @@
                 }
             });
 
+            console.log('원본 데이터 (해당 월):', scheduleData);
+            console.log('서버 데이터:', serverData);
+            console.log('병합 데이터:', mergedData);
+
             // 데이터가 없으면 빈 상태 표시
             if (Object.keys(mergedData).length === 0) {
                 list.innerHTML = `
