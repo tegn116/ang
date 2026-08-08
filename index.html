@@ -1351,15 +1351,27 @@
             });
         }
 
-        // 초기 실행
-        generateMonthTabs();
-        generateScheduleList();
-        
-        // 서버 데이터 로드 (비동기)
-        loadServerData().then(() => {
+        // 초기 실행 - 서버 데이터 먼저 로드 후 화면 그리기
+        (async function init() {
+            generateMonthTabs();
+            
+            // 로딩 화면 표시
+            document.getElementById('scheduleList').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⏳</div>
+                    <div class="empty-state-text">불러오는 중...</div>
+                </div>
+            `;
+            
+            // 서버 데이터 먼저 로드
+            await loadServerData();
+            
+            // 그 다음 화면 그리기
             generateScheduleList();
+            
+            // 오늘로 스크롤
             setTimeout(() => scrollToToday(), 100);
-        });
+        })();
         
         // 주기적으로 서버 데이터 갱신 (30초마다)
         setInterval(async () => {
